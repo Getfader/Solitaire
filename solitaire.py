@@ -61,45 +61,6 @@ def deal_cards(deck):
     # Return the initial game state
     return {'tableau': tableau, 'stockpile': stockpile}
 
-# def display_game_state(game_state):
-#     """
-#     Display the current game state including tableau piles and a limited view of the stockpile.
-
-#     Args:
-#         game_state (dict): A dictionary containing the current game state with tableau and stockpile.
-#     """
-#     # Determine the maximum number of cards in any tableau pile
-#     max_pile_size = max(len(cards) for cards in game_state['tableau'].values())
-
-#     # Print the labels for each pile, aligned with the tableau piles
-#     for pile in range(1, len(game_state['tableau']) + 1):
-#         print(f"{pile}".center(4), end=" ")
-#     print()
-
-#     # Display a line of dashes below the labels
-#     print("-" * (6 * len(game_state['tableau'])))
-
-#     # Print the tableau piles vertically
-#     for i in range(max_pile_size):
-#         for pile, cards in game_state['tableau'].items():
-#             if i < len(cards):
-#                 # Pad each card representation with spaces to maintain alignment
-#                 card_str = f"{cards[i][0]}{cards[i][1]}"
-#                 print(f"{card_str.center(4)}", end=" ")
-#             else:
-#                 # If the tableau pile has fewer cards, add empty space to maintain alignment
-#                 print("    ", end=" ")
-#         print()
-
-#     # Display a limited view of the stockpile with only the top 3 cards visible
-#     stockpile_top = game_state['stockpile'][:3]
-#     hidden_card_count = len(game_state['stockpile']) - 3
-#     print("\nStockpile (Top 3 visible):")
-#     for card in stockpile_top:
-#         print(f"{card[0]}{card[1]}")
-#     if hidden_card_count > 0:
-#         print(f"({hidden_card_count} hidden)")
-
 def display_game_state(game_state):
     """
     Display the current game state including tableau piles and a limited view of the stockpile.
@@ -107,11 +68,6 @@ def display_game_state(game_state):
     Args:
         game_state (dict): A dictionary containing the current game state with tableau and stockpile.
     """
-    # Define color codes for red and blue
-    red_color_code = '\033[91m'  # Red
-    blue_color_code = '\033[94m'  # Blue
-    reset_color_code = '\033[0m'  # Reset to default color
-
     # Determine the maximum number of cards in any tableau pile
     max_pile_size = max(len(cards) for cards in game_state['tableau'].values())
 
@@ -127,17 +83,8 @@ def display_game_state(game_state):
     for i in range(max_pile_size):
         for pile, cards in game_state['tableau'].items():
             if i < len(cards):
-                # Get the card rank and suit
-                rank, suit, color = cards[i]
-
-                # Determine the color code based on the card suit
-                if color == 'red':
-                    card_color_code = red_color_code
-                else:
-                    card_color_code = blue_color_code
-
-                # Format the card representation with color
-                card_str = f"{card_color_code}{rank}{suit}{reset_color_code}"
+                # Pad each card representation with spaces to maintain alignment
+                card_str = f"{cards[i][0]}{cards[i][1]}"
                 print(f"{card_str.center(4)}", end=" ")
             else:
                 # If the tableau pile has fewer cards, add empty space to maintain alignment
@@ -149,13 +96,7 @@ def display_game_state(game_state):
     hidden_card_count = len(game_state['stockpile']) - 3
     print("\nStockpile (Top 3 visible):")
     for card in stockpile_top:
-        rank, suit, color = card
-        if color == 'red':
-            card_color_code = red_color_code
-        else:
-            card_color_code = blue_color_code
-        card_str = f"{card_color_code}{rank}{suit}{reset_color_code}"
-        print(f"{card_str}")
+        print(f"{card[0]}{card[1]}")
     if hidden_card_count > 0:
         print(f"({hidden_card_count} hidden)")
 
