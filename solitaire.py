@@ -9,8 +9,10 @@ def initialize_deck():
     Returns:
         list: A list of tuples representing the deck of cards, where each tuple is (rank, suit, color).
     """
+    # Define ranks and suits for a standard deck of cards
     ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
     suits = ['\u2665', '\u2666', '\u2663', '\u2660']  # Hearts, Diamonds, Clubs, Spades
+
     # Define colors for different suits
     suits_colors = {
         '\u2665': 'red',    # Hearts
@@ -18,6 +20,8 @@ def initialize_deck():
         '\u2663': 'blue',   # Clubs
         '\u2660': 'blue'    # Spades
     }
+
+    # Create the deck of cards with ranks, suits, and colors
     deck = [(rank, suit, suits_colors[suit]) for rank in ranks for suit in suits]
     return deck
 
@@ -40,6 +44,7 @@ def deal_cards(deck):
     Returns:
         dict: A dictionary representing the initial game state with tableau and stockpile.
     """
+    # Initialize empty tableau and stockpile
     tableau = {}
     stockpile = []
 
@@ -56,6 +61,45 @@ def deal_cards(deck):
     # Return the initial game state
     return {'tableau': tableau, 'stockpile': stockpile}
 
+# def display_game_state(game_state):
+#     """
+#     Display the current game state including tableau piles and a limited view of the stockpile.
+
+#     Args:
+#         game_state (dict): A dictionary containing the current game state with tableau and stockpile.
+#     """
+#     # Determine the maximum number of cards in any tableau pile
+#     max_pile_size = max(len(cards) for cards in game_state['tableau'].values())
+
+#     # Print the labels for each pile, aligned with the tableau piles
+#     for pile in range(1, len(game_state['tableau']) + 1):
+#         print(f"{pile}".center(4), end=" ")
+#     print()
+
+#     # Display a line of dashes below the labels
+#     print("-" * (6 * len(game_state['tableau'])))
+
+#     # Print the tableau piles vertically
+#     for i in range(max_pile_size):
+#         for pile, cards in game_state['tableau'].items():
+#             if i < len(cards):
+#                 # Pad each card representation with spaces to maintain alignment
+#                 card_str = f"{cards[i][0]}{cards[i][1]}"
+#                 print(f"{card_str.center(4)}", end=" ")
+#             else:
+#                 # If the tableau pile has fewer cards, add empty space to maintain alignment
+#                 print("    ", end=" ")
+#         print()
+
+#     # Display a limited view of the stockpile with only the top 3 cards visible
+#     stockpile_top = game_state['stockpile'][:3]
+#     hidden_card_count = len(game_state['stockpile']) - 3
+#     print("\nStockpile (Top 3 visible):")
+#     for card in stockpile_top:
+#         print(f"{card[0]}{card[1]}")
+#     if hidden_card_count > 0:
+#         print(f"({hidden_card_count} hidden)")
+
 def display_game_state(game_state):
     """
     Display the current game state including tableau piles and a limited view of the stockpile.
@@ -63,6 +107,11 @@ def display_game_state(game_state):
     Args:
         game_state (dict): A dictionary containing the current game state with tableau and stockpile.
     """
+    # Define color codes for red and blue
+    red_color_code = '\033[91m'  # Red
+    blue_color_code = '\033[94m'  # Blue
+    reset_color_code = '\033[0m'  # Reset to default color
+
     # Determine the maximum number of cards in any tableau pile
     max_pile_size = max(len(cards) for cards in game_state['tableau'].values())
 
@@ -78,8 +127,17 @@ def display_game_state(game_state):
     for i in range(max_pile_size):
         for pile, cards in game_state['tableau'].items():
             if i < len(cards):
-                # Pad each card representation with spaces to maintain alignment
-                card_str = f"{cards[i][0]}{cards[i][1]}"
+                # Get the card rank and suit
+                rank, suit, color = cards[i]
+
+                # Determine the color code based on the card suit
+                if color == 'red':
+                    card_color_code = red_color_code
+                else:
+                    card_color_code = blue_color_code
+
+                # Format the card representation with color
+                card_str = f"{card_color_code}{rank}{suit}{reset_color_code}"
                 print(f"{card_str.center(4)}", end=" ")
             else:
                 # If the tableau pile has fewer cards, add empty space to maintain alignment
@@ -91,7 +149,13 @@ def display_game_state(game_state):
     hidden_card_count = len(game_state['stockpile']) - 3
     print("\nStockpile (Top 3 visible):")
     for card in stockpile_top:
-        print(f"{card[0]}{card[1]}")
+        rank, suit, color = card
+        if color == 'red':
+            card_color_code = red_color_code
+        else:
+            card_color_code = blue_color_code
+        card_str = f"{card_color_code}{rank}{suit}{reset_color_code}"
+        print(f"{card_str}")
     if hidden_card_count > 0:
         print(f"({hidden_card_count} hidden)")
 
@@ -153,27 +217,29 @@ def move_stack(source, destination, stack_size, game_state):
         game_state (dict): The current game state.
 
     Returns:
-        dict: The updated game state after the move.
+        tuple: A tuple containing the updated game state after the move and an error message if applicable.
     """
-    # Check if the move is valid
-    if source == destination or stack_size <= 0:
-        print("Invalid move.")
-        return game_state
+    # Check if the source and destination piles are within the valid range
+    if source not in game_state['tableau'] or destination not in game_state['tableau']:
+        return game_state, "Invalid source or destination pile."
 
     source_pile = game_state['tableau'][source]
     destination_pile = game_state['tableau'][destination]
 
+    # Check if the stack size exceeds the number of cards in the source pile
+    if stack_size > len(source_pile):
+        return game_state, "Stack size exceeds the number of cards in the source pile."
+
     # Check if the stack can be moved to the destination
     if not source_pile or (destination_pile and source_pile[-stack_size][0] != str(int(destination_pile[-1][0]) - 1) or source_pile[-stack_size][1] == destination_pile[-1][1]):
-        print("Invalid move. The stack cannot be moved to the destination.")
-        return game_state
+        return game_state, "Invalid move. The stack cannot be moved to the destination."
 
     # Move the stack of cards to the destination pile
     stack_to_move = source_pile[-stack_size:]
     game_state['tableau'][destination] += stack_to_move
     game_state['tableau'][source] = source_pile[:-stack_size]
 
-    return game_state
+    return game_state, None
 
 def draw_card(game_state):
     """
@@ -201,8 +267,7 @@ def draw_card(game_state):
 
     # If no tableau pile is eligible, return the card to the stockpile
     game_state['stockpile'].insert(0, card)
-    print("No tableau pile is eligible for the drawn card.")
-    return game_state
+    return game_state, "No tableau pile is eligible for the drawn card."
 
 def check_win_condition(game_state):
     """
@@ -252,7 +317,11 @@ def main():
             break
         elif action == 'draw':
             # Draw a card from the stockpile
-            game_state = draw_card(game_state)
+            game_state, draw_error = draw_card(game_state)
+            if draw_error:
+                print(draw_error)
+                input("Press Enter to continue...")
+                continue
         elif action.startswith('stack'):
             # Move a stack of cards between tableau piles
             try:
@@ -260,14 +329,25 @@ def main():
                 source, destination, stack_size = int(source), int(destination), int(stack_size)
             except ValueError:
                 print("Invalid move format. Please enter 'stack <source> <destination> <stack_size>' to move a stack of cards between tableau piles.")
+                input("Press Enter to continue...")
                 continue
-            game_state = move_stack(source, destination, stack_size, game_state)
+
+            # Move the stack of cards
+            game_state, stack_move_error = move_stack(source, destination, stack_size, game_state)
+            if stack_move_error:
+                print(stack_move_error)
+                input("Press Enter to continue...")
+                continue
+
         else:
             # Split action into source and destination piles
             try:
                 source, destination = map(int, action.split(' to '))
+                if not (1 <= source <= 7 and 1 <= destination <= 7):
+                    raise ValueError("Invalid source or destination pile number.")
             except ValueError:
                 print("Invalid move format. Please enter '1 to 2' to move a card from pile 1 to pile 2.")
+                input("Press Enter to continue...")
                 continue
             
             # Move card between tableau piles
@@ -280,8 +360,6 @@ def main():
             print("Congratulations! You win!")
             break
 
-
 # Run the game
 if __name__ == "__main__":
     main()
-
